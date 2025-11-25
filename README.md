@@ -1,59 +1,48 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Aufgabenstellung
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+-   Einfacher Bewerbungsprüfservice, der über API (/api/applications) angesprochen wird
+-   Leicht erweiterbar, um neue Regeln zur Prüfung eingereichter Dokumente und Daten
+-   Unit- und Feature-Tests
+-   Keine UI
 
-## About Laravel
+## Vorgehensweise
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Als Allererstes habe ich (natürlich) ein neues Laravel 12 Projekt erstellt über Composer. Dann habe ich Laravel Sail initialisiert, um das Projekt der Einfachheit und Übersichtlichkeit wegen bei mir lokal im Docker-Container laufen zu lassen.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Danach habe ich die routes/web.php entfernt und eine routes/api.php Datei erstellt, um sichtbar die API zu definieren. Diese habe ich dann in der bootstrap/app.php eingebunden. Um eine JSON-Antwort immer zu garantieren, habe ich dort auch eine globale Middleware "App/Http/Middleware/EnforceJsonResponse" eingebunden.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Für eine Struktur im Kopf habe ich dann erstmal folgende Gedanken gehabt:
 
-## Learning Laravel
+-   Neues Rule-Interface nötig, um konkrete Daten durch die Validierung zurückzugeben. Für den Return-Type "array" habe ich mich entschieden, um die Möglichkeit bestehen zu lassen, dass mehrere fehlende Dokumente aus einer gebrochenen Regel kommen können.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+-   Dadurch leicht erweiterbar, automatisiertes Erkennen neuer Regeln und Einbinden in die ValidateDocumentsAction, wenn die Datei im Ordner UND das neue Interface implementiert (siehe app/Providers/AppServiceProvider.php)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+-   In der app/Actions/Application/ValidateDocumentsAction wird dann der im Controller übergebene DTO auf fehlende Dokumente validiert.
 
-## Laravel Sponsors
+Prozedere ist wie folgt:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+-   /api/applications bekommt einen Request mit allen Feldern
 
-### Premium Partners
+-   Dieser Request wird zuerst über die StoreApplicationRequest auf fehlende Felder und Typen validiert
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+-   Wenn erfolgreich, wird daraus ein DTO erstellt mit den richtigen Typen, was dann dem ApplicationValidationService übergeben wird
 
-## Contributing
+-   In diesem Service wird die ValidateDocumentsAction ausgeführt mit allen Regeln, die sich im Ordner App/Rules/Application/ befinden und vom Typ das neue Interface App/Rules/Interfaces/ApplicationRuleInterface implementieren
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+-   Diese Action validiert jede Regel, die ich im ServiceProvider manuell injected habe über die oben genannten Bedingungen
 
-## Code of Conduct
+-   Zurückkommt ein Array mit allen fehlenden Dokumenten, die dann in die ApplicationValidationResource übergeben werden
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+-   Damit Laravel-Magic nicht ein Array zurückgibt, der unsere Response an einen "data"-Key anhängt (['data' => ['status'=> ...]]) als Key beginnt, haben wir in der boot()-Funktion im ServiceProvider die JsonResource::withoutWrapping(); benutzt
 
-## Security Vulnerabilities
+Am Ende habe ich die Test-Cases erstellt, um folgende Sachen sicherzustellen:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+-   Einen Test, dass die API immer JSON zurückgibt
 
-## License
+-   Zwei Tests, um sicherzustellen, dass sowohl bei ['status'=> 'reject'] als auch bei ['status'=> 'accept'] ein JSON-Response zurückkommt, der immer denselben Aufbau hat
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+-   Einen Test, um sicherzustellen, dass auch Validierungsfehler, wenn Felder fehlen, in JSON zurückgegeben werden
+
+-   Drei Unit-Tests, um jede einzelne Beispielregel zu testen
+
+-   Einen Unit-Test, um die Request-Validation zu testen, wenn alle Felder fehlen
