@@ -18,9 +18,9 @@ class Application extends Model
         self::SUBMITTED_DOCUMENTS => 'array',
     ];
 
-    const APPLICANT_NAME = 'applicant_name';
-    const COUNTRY_OF_ORIGIN = 'country_of_origin';
-    const PROGRAM_TYPE = 'program_type';
-    const APPLICATION_TYPE = 'application_type';
-    const SUBMITTED_DOCUMENTS = 'submitted_documents';
+    public const APPLICANT_NAME = 'applicant_name';
+    public const COUNTRY_OF_ORIGIN = 'country_of_origin';
+    public const PROGRAM_TYPE = 'program_type';
+    public const APPLICATION_TYPE = 'application_type';
+    public const SUBMITTED_DOCUMENTS = 'submitted_documents';
 }

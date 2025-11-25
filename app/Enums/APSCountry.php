@@ -4,10 +4,10 @@ namespace App\Enums;
 
 enum APSCountry: string
 {
-    const CHINA = 'china';
-    const VIETNAM = 'vietnam';
-    const INDIA = 'india';
-    const MONGOLIA = 'mongolia';
+    public const CHINA = 'china';
+    public const VIETNAM = 'vietnam';
+    public const INDIA = 'india';
+    public const MONGOLIA = 'mongolia';
 
     /**
      * @return array<string>
