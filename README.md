@@ -46,3 +46,5 @@ Am Ende habe ich die Test-Cases erstellt, um folgende Sachen sicherzustellen:
 -   Drei Unit-Tests, um jede einzelne Beispielregel zu testen
 
 -   Einen Unit-Test, um die Request-Validation zu testen, wenn alle Felder fehlen
+
+Am Ende bin ich nochmal durch alle PHPStan Stufen gegangen bis Stufe 10 und habe alles nachgebessert und gepusht.
