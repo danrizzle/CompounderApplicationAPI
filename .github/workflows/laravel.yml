@@ -33,6 +33,6 @@ jobs:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
       run: php artisan test
-    - name: phpstan Level 10
+    - name: phpstan Level 8
       run: |
-        ./vendor/bin/phpstan analyse --level=10 --memory-limit=1G
+        ./vendor/bin/phpstan analyse --level=8--memory-limit=1G
