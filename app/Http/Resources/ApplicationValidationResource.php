@@ -15,8 +15,6 @@ class ApplicationValidationResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        assert(is_array($this->resource));
-
         $status = $this->resource['status'] ?? 'rejected';
         $missingDocuments = $this->resource['missing_documents'] ?? [];
 

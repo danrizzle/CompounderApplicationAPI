@@ -33,22 +33,6 @@ class ApplicationDto
         $applicationType = $data['application_type'] ?? '';
         $submittedDocuments = $data['submitted_documents'] ?? [];
 
-        if (!is_string($applicantName)) {
-            throw new \InvalidArgumentException('applicant_name must be a string');
-        }
-        if (!is_string($countryOfOrigin)) {
-            throw new \InvalidArgumentException('country_of_origin must be a string');
-        }
-        if (!is_string($programType)) {
-            throw new \InvalidArgumentException('program_type must be a string');
-        }
-        if (!is_string($applicationType)) {
-            throw new \InvalidArgumentException('application_type must be a string');
-        }
-        if (!is_array($submittedDocuments)) {
-            throw new \InvalidArgumentException('submitted_documents must be an array');
-        }
-
         return new self(
             applicantName: $applicantName,
             countryOfOrigin: $countryOfOrigin,

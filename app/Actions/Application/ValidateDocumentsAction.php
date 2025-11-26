@@ -38,6 +38,6 @@ class ValidateDocumentsAction
             }
         }
 
-        return $missingDocuments;
+        return array_unique($missingDocuments);
     }
 }
